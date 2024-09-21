@@ -5,6 +5,31 @@ import random
 import socket
 import select
 
+# static http response
+def http_response():
+    body = (
+        '<!doctype html>\r\n'
+        '<html>\r\n'
+            '\t<head>\r\n'
+                '\t\t<title>skall</title>\r\n'
+                '\t\t<meta charset="utf-8">\r\n'
+            '\t</head>\r\n'
+            '\t<body>\r\n'
+		        '\t\t<h1>Welcome to skall.dev!</h1>\r\n'
+		        '\t\t<p>Coming soon...</p>\r\n'
+            '\t</body>\r\n'
+        '</html>\r\n'
+        ).encode()
+    body_len = len(body)
+    headers = (
+        'Server: skall\r\n'
+        'Content-type: text/html; charset=utf-8\r\n'
+        f'Content-length: {body_len}\r\n\r\n'
+        ).encode()
+    start_line = ('HTTP/1.1 200 OK\r\n').encode()
+    result = b''.join([start_line, headers, body])
+    return result
+
 def sig_handler(sig, frame):
     print('exiting...')
     sys.exit(0)
@@ -90,7 +115,9 @@ while True:
             # accept()
             sock_client, client_addr = sock_listen.accept()
             reads.append(sock_client)
-            client_host, client_port = socket.getnameinfo(client_addr, socket.NI_NUMERICHOST)
+            client_host, client_port = socket.getnameinfo(
+                    client_addr,
+                    socket.NI_NUMERICHOST)
             print(f'new connection established: {client_host}:{client_port}')
         # socket ready to be read from
         else:
@@ -107,7 +134,7 @@ while True:
                 reads.remove(r)
                 continue
             else:
-                r.sendall(bytes('hello world\n', 'utf-8'))
+                r.sendall(http_response())
 
 sock_listen.close()
 
