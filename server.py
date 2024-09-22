@@ -30,13 +30,6 @@ def http_response():
     result = b''.join([start_line, headers, body])
     return result
 
-def sig_handler(sig, frame):
-    print('exiting...')
-    sys.exit(0)
-
-# map sig_handler
-signal.signal(signal.SIGINT, sig_handler)
-
 # args
 parser = argparse.ArgumentParser()
 parser.add_argument('-p', '--port',
@@ -97,11 +90,20 @@ except OSError as err_msg:
 
 # listen()
 try:
-    sock_listen.listen(10) # ??
+    # /proc/sys/net/core/somaxconn => 4096
+    sock_listen.listen(128)
 except OSError as err_msg:
     print(f'server unable to accept connections: ', err_msg)
     sys.exit(1)
 print(f'listening on: {sa[0]}:{sa[1]}')
+
+def sig_handler(sig, frame):
+    print('exiting...')
+    sock_listen.close()
+    sys.exit(0)
+
+# map sig_handler
+signal.signal(signal.SIGINT, sig_handler)
 
 # select()
 reads = []
@@ -121,20 +123,26 @@ while True:
             print(f'new connection established: {client_host}:{client_port}')
         # socket ready to be read from
         else:
-            data = r.recv(4096) # ??
+            data = r.recv(4096)
+            # client has closed the connection
+            if not data:
+                client_host, client_port = r.getpeername()
+                print(f'closing connection: {client_host}:{client_port}')
+                r.shutdown(socket.SHUT_WR) # send FIN
+                reads.remove(r)
+                continue
             req_split = data.decode('utf-8').split('\r\n')
             close = False
             for s in req_split:
                 if s == 'Connection: close':
                     close = True
+            print(data.decode())
             if close:
                 client_host, client_port = r.getpeername()
                 print(f'closing connection: {client_host}:{client_port}')
-                r.close()
+                r.shutdown(socket.SHUT_WR) # send FIN
                 reads.remove(r)
                 continue
             else:
                 r.sendall(http_response())
-
-sock_listen.close()
 
