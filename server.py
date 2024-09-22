@@ -37,18 +37,18 @@ parser.add_argument('-p', '--port',
                     help = 'specifies the port number to be used')
 args = parser.parse_args()
 port = 0
-lowest_port = 1024
-highest_port = 65535
+MIN_PORT = 1024
+MAX_PORT = 65535
 if args.port:
-    if args.port < lowest_port:
+    if args.port < MIN_PORT:
         print('port lower than 1024')
         sys.exit(1)
-    elif args.port > highest_port:
+    elif args.port > MAX_PORT:
         print('port greater than 65535')
         sys.exit(1)
     port = args.port
 else:
-    port = random.randint(lowest_port, highest_port)
+    port = random.randint(MIN_PORT, MAX_PORT)
 
 # getaddrinfo() -> returns a list of 5-tuples
 addr_info = None
