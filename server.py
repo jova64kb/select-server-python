@@ -11,11 +11,11 @@ def http_response():
         '<!doctype html>\r\n'
         '<html>\r\n'
             '\t<head>\r\n'
-                '\t\t<title>skall</title>\r\n'
+                '\t\t<title>select</title>\r\n'
                 '\t\t<meta charset="utf-8">\r\n'
             '\t</head>\r\n'
             '\t<body>\r\n'
-		        '\t\t<h1>Welcome to skall.dev!</h1>\r\n'
+		        '\t\t<h1>Welcome to select-server-python!</h1>\r\n'
 		        '\t\t<p>Coming soon...</p>\r\n'
             '\t</body>\r\n'
         '</html>\r\n'
@@ -54,7 +54,7 @@ else:
 addr_info = None
 try:
     addr_info = socket.getaddrinfo(
-        '127.0.0.1',
+        None,
         port,
         socket.AF_INET,
         socket.SOCK_STREAM,
